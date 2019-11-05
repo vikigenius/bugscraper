@@ -14,10 +14,5 @@ def main(args=None):
     return 0
 
 
-@main.command()
-def scrape():
-    pass
-
-
 if __name__ == "__main__":
     sys.exit(main())  # pragma: no cover

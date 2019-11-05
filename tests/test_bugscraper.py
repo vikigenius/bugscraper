@@ -7,7 +7,7 @@ import pytest
 
 from click.testing import CliRunner
 
-from bugscraper import bugscraper
+from bugscraper.bugscraper import BugScraper, BugzillaBugApiUrl
 from bugscraper import cli
 
 
@@ -36,3 +36,11 @@ def test_command_line_interface():
     help_result = runner.invoke(cli.main, ['--help'])
     assert help_result.exit_code == 0
     assert '--help  Show this message and exit.' in help_result.output
+
+
+def test_bugscraper():
+    api_url = BugzillaBugApiUrl('kernel')
+    scraper = BugScraper(10)
+    response = scraper.scrape(api_url, 1)
+    assert response is not None
+    assert isinstance(response, dict)
