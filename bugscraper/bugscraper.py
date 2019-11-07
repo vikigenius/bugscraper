@@ -3,6 +3,7 @@ import os
 import json
 import requests
 import logging
+from typing import Iterable
 
 
 logger = logging.getLogger('bugscraper')
@@ -53,14 +54,6 @@ class BugzillaBugApi(object):
         finally:
             return bug_dict
 
-    def get_bug_with_comments(self, bug_id):
-        bug_dict = self.get_bug(bug_id)
-        if bug_dict is None:
-            return None
-        comment_dict = self.get_comment(bug_id)
-        bug_dict['comments'] = comment_dict
-        return bug_dict
-
     def __str__(self):
         return f'http://bugzilla.{self.sub_domain}.org/rest/bug'
 
@@ -69,24 +62,22 @@ class BugSaver(object):
     """
     Bug Saver utility that saves bug by years in json lines format
     """
-    def __init__(self, save_dir):
+    def __init__(self, save_dir, years: Iterable[int]):
         os.makedirs(save_dir, exist_ok=True)
         self.save_dir = save_dir
-        self.year = 0
-        self.fileobj = None
+        self.bug_fileobjs = {}
+        logger.info(f'Opening {len(years)} files for saving bugs')
+        for year in years:
+            filepath = os.path.join(self.save_dir, str(year) + '.jsonl')
+            self.bug_fileobjs[year] = open(filepath, 'a')
 
     def __enter__(self):
         return self
 
     def save(self, bug):
-        creation_year = bug['creation_time'].split('-')[0]
-        if self.year != creation_year:
-            filename = creation_year + '.jsonl'
-            save_path = os.path.join(self.save_dir, filename)
-            self.fileobj = open(save_path, 'a')
-
-        self.fileobj.write(json.dumps(bug) + '\n')
+        creation_year = int(bug['creation_time'].split('-')[0])
+        self.bug_fileobjs[creation_year].write(json.dumps(bug) + '\n')
 
     def __exit__(self):
-        if self.fileobj is not None:
-            self.fileobj.close()
+        for fileobj in self.bug_fileobjs:
+            fileobj.close()

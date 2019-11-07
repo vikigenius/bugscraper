@@ -27,17 +27,27 @@ def main(verbose, debug_file):
     return 0
 
 
+year_maps = {
+    'kernel': range(2002, 2019)
+}
+
+
 @click.argument('subdomain')
 @click.option('--save_dir', '-s', type=click.Path(), default='.')
-@click.option('--init-id', '-i', default=1)
+@click.option('--init_id', '-i', default=1)
 @click.option('--fin-id', '-f', default=200000)
+@click.option('--syo', type=click.IntRange(2000, 2020), help='Starting Year range override')
+@click.option('--eyo', type=click.IntRange(2000, 2020), help='Ending Year range override')
 @main.command()
-def scrape(subdomain, save_dir, init_id, fin_id):
+def scrape(subdomain, save_dir, init_id, fin_id, syo, eyo):
     save_dir = PurePath(save_dir, 'bugs')
     api = BugzillaBugApi(subdomain)
-    saver = BugSaver(save_dir)
+    if syo is not None and eyo is not None:
+        saver = BugSaver(save_dir, range(syo, eyo))
+    else:
+        saver = BugSaver(save_dir, year_maps[subdomain])
     for bug_id in tqdm(range(init_id, fin_id), desc='Fetching Issues'):
-        bug = api.get_bug_with_comments(bug_id)
+        bug = api.get_bug(bug_id)
         if bug is not None:
             saver.save(bug)
 
