@@ -72,10 +72,21 @@ class BugSaver(object):
     def __init__(self, save_dir):
         os.makedirs(save_dir, exist_ok=True)
         self.save_dir = save_dir
+        self.year = 0
+        self.fileobj = None
+
+    def __enter__(self):
+        return self
 
     def save(self, bug):
         creation_year = bug['creation_time'].split('-')[0]
-        filename = creation_year + '.jsonl'
-        save_path = os.path.join(self.save_dir, filename)
-        with open(save_path, 'a') as bdfile:
-            bdfile.write(json.dumps(bug) + '\n')
+        if self.year != creation_year:
+            filename = creation_year + '.jsonl'
+            save_path = os.path.join(self.save_dir, filename)
+            self.fileobj = open(save_path, 'a')
+
+        self.fileobj.write(json.dumps(bug) + '\n')
+
+    def __exit__(self):
+        if self.fileobj is not None:
+            self.fileobj.close()

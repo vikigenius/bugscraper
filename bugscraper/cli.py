@@ -38,7 +38,8 @@ def scrape(subdomain, save_dir, init_id, fin_id):
     saver = BugSaver(save_dir)
     for bug_id in tqdm(range(init_id, fin_id), desc='Fetching Issues'):
         bug = api.get_bug_with_comments(bug_id)
-        saver.save(bug)
+        if bug is not None:
+            saver.save(bug)
 
 
 if __name__ == "__main__":
