@@ -55,6 +55,8 @@ class BugzillaBugApi(object):
 
     def get_bug_with_comments(self, bug_id):
         bug_dict = self.get_bug(bug_id)
+        if bug_dict is None:
+            return None
         comment_dict = self.get_comment(bug_id)
         bug_dict['comments'] = comment_dict
         return bug_dict
