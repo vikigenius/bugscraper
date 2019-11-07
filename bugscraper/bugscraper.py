@@ -1,34 +1,66 @@
 # -*- coding: utf-8 -*-
 import os
-import time
 import json
 import requests
-from dataclasses import dataclass
+import logging
 
 
-@dataclass
-class BugzillaBugApiUrl:
-    sub_domain: str = 'mozilla'
-
-    def __repr__(self):
-        return f'http://bugzilla.{self.sub_domain}.org/rest/bug?'
+logger = logging.getLogger('bugscraper')
 
 
-class BugScraper(object):
+class BugzillaBugApi(object):
     """
-    simple Scraper that scrapes bugzilla at a given rate (requests/second)
+    Simple API class interface to fetch bugs and comments
     """
-    def __init__(self, rate):
-        self.rate = rate
+    def __init__(self, sub_domain: str):
+        self.sub_domain = sub_domain
 
-    def scrape(self, api_url, bug_id):
-        wait_time = 1/self.rate
-        resp = requests.get(url=api_url, params={'id': bug_id})
-        time.sleep(wait_time)
-        if resp.ok:
-            return resp.json()
-        else:
-            return None
+    def bug_url(self, bug_id):
+        return str(self) + '/' + str(bug_id)
+
+    def comment_url(self, bug_id):
+        return str(self.bug_url(bug_id)) + '/comment'
+
+    def get_bug(self, bug_id):
+        try:
+            response = requests.get(url=self.bug_url(bug_id))
+            response.raise_for_status()
+            bug_dict = response.json()['bugs'][0]
+        except requests.exceptions.RequestException as e:
+            logger.warn('Connection Error: returning None')
+            logger.debug(str(e))
+            bug_dict = None
+        except KeyError as e:
+            logger.warn('incorrect key bugs: returning None')
+            logger.debug(str(e))
+            bug_dict = None
+        finally:
+            return bug_dict
+
+    def get_comment(self, bug_id):
+        try:
+            response = requests.get(url=self.comment_url(bug_id))
+            response.raise_for_status()
+            bug_dict = response.json()['bugs'][str(bug_id)]['comments']
+        except requests.exceptions.RequestException as e:
+            logger.warning(f'Connection Error: returning None for bug_id: {bug_id}')
+            logger.debug(str(e))
+            bug_dict = None
+        except KeyError as e:
+            logger.warning(f'KeyError while fetching comments: returning None for bug_id: {bug_id}')
+            logger.debug(str(e))
+            bug_dict = None
+        finally:
+            return bug_dict
+
+    def get_bug_with_comments(self, bug_id):
+        bug_dict = self.get_bug(bug_id)
+        comment_dict = self.get_comment(bug_id)
+        bug_dict['comments'] = comment_dict
+        return bug_dict
+
+    def __str__(self):
+        return f'http://bugzilla.{self.sub_domain}.org/rest/bug'
 
 
 class BugSaver(object):
@@ -40,7 +72,8 @@ class BugSaver(object):
         self.save_dir = save_dir
 
     def save(self, bug):
-        filename = bug['creation_date'].timestamp() + '.jsonl'
+        creation_year = bug['creation_time'].split('-')[0]
+        filename = creation_year + '.jsonl'
         save_path = os.path.join(self.save_dir, filename)
         with open(save_path, 'a') as bdfile:
             bdfile.write(json.dumps(bug) + '\n')

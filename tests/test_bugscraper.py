@@ -4,10 +4,10 @@
 """Tests for `bugscraper` package."""
 
 import pytest
-
+import json
 from click.testing import CliRunner
 
-from bugscraper.bugscraper import BugScraper, BugzillaBugApiUrl
+from bugscraper.bugscraper import BugzillaBugApi, BugSaver
 from bugscraper import cli
 
 
@@ -21,26 +21,33 @@ def response():
     # return requests.get('https://github.com/audreyr/cookiecutter-pypackage')
 
 
-def test_content(response):
-    """Sample pytest test function with the pytest fixture as an argument."""
-    # from bs4 import BeautifulSoup
-    # assert 'GitHub' in BeautifulSoup(response.content).title.string
+@pytest.fixture(scope="module", params=[1, 100])
+def kernel_bug(request):
+    api = BugzillaBugApi('kernel')
+    bug = api.get_bug_with_comments(request.param)
+    return bug
 
 
 def test_command_line_interface():
     """Test the CLI."""
     runner = CliRunner()
-    result = runner.invoke(cli.main)
-    assert result.exit_code == 0
-    assert 'bugscraper.cli.main' in result.output
     help_result = runner.invoke(cli.main, ['--help'])
     assert help_result.exit_code == 0
-    assert '--help  Show this message and exit.' in help_result.output
+    assert 'scrape' in help_result.output
 
 
-def test_bugscraper():
-    api_url = BugzillaBugApiUrl('kernel')
-    scraper = BugScraper(10)
-    response = scraper.scrape(api_url, 1)
-    assert response is not None
-    assert isinstance(response, dict)
+def test_comments(kernel_bug):
+    bug = kernel_bug
+    assert isinstance(bug, dict)
+    assert 'comments' in bug
+
+
+def test_bug_saver(tmp_path):
+    save_dir = tmp_path/'bugs'
+    sim_bug = {'creation_time': '2002-11-14T04:48:24Z'}
+    saver = BugSaver(save_dir)
+    saver.save(sim_bug)
+    test_bug_file = save_dir/'2002.jsonl'
+
+    assert test_bug_file.exists()
+    assert json.loads(test_bug_file.read_text()) == sim_bug
