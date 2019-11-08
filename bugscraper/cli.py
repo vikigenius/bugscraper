@@ -4,9 +4,10 @@
 import sys
 import click
 from pathlib import PurePath
-from tqdm import tqdm
 from bugscraper.log import configure_logger
 from bugscraper.bugscraper import BugzillaBugApi, BugSaver
+from bugscraper import utils
+from tqdm import tqdm
 
 
 @click.option(
@@ -33,23 +34,29 @@ year_maps = {
 
 
 @click.argument('subdomain')
-@click.option('--save_dir', '-s', type=click.Path(), default='.')
-@click.option('--init_id', '-i', default=1)
+@click.option('--save-dir', '-s', type=click.Path(), default='.')
+@click.option('--init-id', '-i', default=1)
 @click.option('--fin-id', '-f', default=200000)
 @click.option('--syo', type=click.IntRange(2000, 2020), help='Starting Year range override')
 @click.option('--eyo', type=click.IntRange(2000, 2020), help='Ending Year range override')
+@click.option('--num-workers', '-w', default=8)
+@click.option('--chunk-size', '-c', default=1000)
 @main.command()
-def scrape(subdomain, save_dir, init_id, fin_id, syo, eyo):
+def scrape(subdomain, save_dir, init_id, fin_id, syo, eyo, num_workers, chunk_size):
     save_dir = PurePath(save_dir, 'bugs')
+    bug_range = range(init_id, fin_id)
+    bug_chunks = list(utils.divide_chunks(bug_range, chunk_size))
     api = BugzillaBugApi(subdomain)
     if syo is not None and eyo is not None:
-        saver = BugSaver(save_dir, range(syo, eyo))
+        saver = BugSaver(save_dir, range(syo, eyo), len(bug_chunks))
     else:
-        saver = BugSaver(save_dir, year_maps[subdomain])
-    for bug_id in tqdm(range(init_id, fin_id), desc='Fetching Issues'):
-        bug = api.get_bug(bug_id)
-        if bug is not None:
-            saver.save(bug)
+        saver = BugSaver(save_dir, year_maps[subdomain], len(bug_chunks))
+
+    for chunk in tqdm(bug_chunks, desc='Fetching and Saving bug chunks of size {}'.format(len(bug_chunks))):
+        bug_list = api.fetch(chunk)
+        saver.save(bug_list)
+
+    saver.save_metadata()
 
 
 if __name__ == "__main__":
