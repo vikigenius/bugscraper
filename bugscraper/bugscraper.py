@@ -66,13 +66,12 @@ class BugSaver(object):
         for bug in bug_list:
             creation_year = int(bug['creation_time'].split('-')[0])
             self.bug_fileobjs[creation_year].write(json.dumps(bug) + '\n')
-            self.bug_metadata.append(bug['id'])
+            self.bug_metadata.append(str(bug['id']))
 
     def save_metadata(self):
         with open(self.metadata_path, 'w') as mp:
             for meta in self.bug_metadata:
-                mp.write(meta)
-                mp.write('\n')
+                mp.write(meta + '\n')
             logger.info('Saved Metadata to file: {}'.format(self.metadata_path))
 
     def __del__(self):
