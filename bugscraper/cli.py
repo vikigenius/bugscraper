@@ -54,7 +54,8 @@ def scrape(subdomain, save_dir, init_id, fin_id, syo, eyo, num_workers, chunk_si
 
     for chunk in tqdm(bug_chunks, desc='Fetching and Saving bug chunks of size {}'.format(len(bug_chunks))):
         bug_list = api.fetch(chunk)
-        saver.save(bug_list)
+        if bug_list is not None:
+            saver.save(bug_list)
 
     saver.save_metadata()
 
