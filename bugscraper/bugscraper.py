@@ -71,7 +71,8 @@ class BugSaver(object):
     def save_metadata(self):
         with open(self.metadata_path, 'w') as mp:
             for meta in self.bug_metadata:
-                mp.write(meta + '\n')
+                mp.write(meta)
+                mp.write('\n')
             logger.info('Saved Metadata to file: {}'.format(self.metadata_path))
 
     def __del__(self):
