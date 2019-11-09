@@ -63,7 +63,7 @@ def bugscrape(subdomain, save_dir, init_id, fin_id, syo, eyo, chunk_size):
 @click.option('--save-dir', '-s', type=click.Path(), default='.')
 @main.command()
 def commentscrape(subdomain, save_dir):
-    save_dir = PurePath(save_dir, 'bugs')
+    save_dir = PurePath(save_dir, subdomain + 'bugs')
 
     saver = CommentSaver(save_dir)
     api = BugzillaCommentApi(subdomain)
@@ -76,10 +76,11 @@ def commentscrape(subdomain, save_dir):
     saver.save_metadata()
 
 
-@click.argument('save-dir')
+@click.argument('subdomain')
+@click.option('--save-dir', '-s', type=click.Path(), default='.')
 @main.command()
 def metagen(save_dir):
-    save_dir = PurePath(save_dir, 'bugs')
+    save_dir = PurePath(save_dir, 'subdomain' + 'bugs')
     CommentSaver(save_dir).save_metadata()
 
 
