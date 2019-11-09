@@ -1,0 +1,30 @@
+#+TITLE:
+#+DATE:    November 8, 2019
+#+SINCE:   {replace with next tagged release version}
+#+STARTUP: inlineimages
+
+* Table of Contents :TOC_3:noexport:
+- [[#description][Description]]
+- [[#prerequisites][Prerequisites]]
+  - [[#click][click]]
+  - [[#tqdm][tqdm]]
+- [[#installation][Installation]]
+- [[#troubleshooting][Troubleshooting]]
+
+* Description
+A simple scraper to scrape bugs and comments from bugzilla using the REST API
+
+* Prerequisites
+Running the scraper only has two prerequisites:
+** click
+** tqdm
+
+* Installation
+Clone this repository, create a new environment and use the command
+#begin_src org :eval never-export
+pip install -e .
+#end_src
+
+
+* Troubleshooting
+Common issues and their solution, or places to look for help.
