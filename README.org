@@ -14,9 +14,10 @@
 A simple scraper to scrape bugs and comments from bugzilla using the REST API
 
 * Prerequisites
-Running the scraper only has two prerequisites:
+Running the scraper only has three prerequisites:
 - click
 - tqdm
+- requests
 
 * Installation
 Clone this repository, create a new environment and use the command
