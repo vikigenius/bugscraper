@@ -6,9 +6,8 @@
 * Table of Contents :TOC_3:noexport:
 - [[#description][Description]]
 - [[#prerequisites][Prerequisites]]
-  - [[#click][click]]
-  - [[#tqdm][tqdm]]
 - [[#installation][Installation]]
+- [[#usage][Usage]]
 - [[#troubleshooting][Troubleshooting]]
 
 * Description
@@ -16,8 +15,8 @@ A simple scraper to scrape bugs and comments from bugzilla using the REST API
 
 * Prerequisites
 Running the scraper only has two prerequisites:
-** click
-** tqdm
+- click
+- tqdm
 
 * Installation
 Clone this repository, create a new environment and use the command
@@ -25,6 +24,8 @@ Clone this repository, create a new environment and use the command
 pip install -e .
 #end_src
 
+* Usage
+TODO
 
 * Troubleshooting
-Common issues and their solution, or places to look for help.
+TODO
