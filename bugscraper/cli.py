@@ -5,7 +5,7 @@ import sys
 import click
 from pathlib import PurePath
 from bugscraper.log import configure_logger
-from bugscraper.bugscraper import BugzillaBugApi, BugSaver
+from bugscraper.bugscraper import BugzillaBugApi, BugSaver, BugzillaCommentApi, CommentSaver
 from bugscraper import utils
 from tqdm import tqdm
 
@@ -39,10 +39,9 @@ year_maps = {
 @click.option('--fin-id', '-f', default=200000)
 @click.option('--syo', type=click.IntRange(2000, 2020), help='Starting Year range override')
 @click.option('--eyo', type=click.IntRange(2000, 2020), help='Ending Year range override')
-@click.option('--num-workers', '-w', default=8)
 @click.option('--chunk-size', '-c', default=1000)
 @main.command()
-def scrape(subdomain, save_dir, init_id, fin_id, syo, eyo, num_workers, chunk_size):
+def bugscrape(subdomain, save_dir, init_id, fin_id, syo, eyo, chunk_size):
     save_dir = PurePath(save_dir, 'bugs')
     bug_range = range(init_id, fin_id)
     bug_chunks = list(utils.divide_chunks(bug_range, chunk_size))
@@ -58,6 +57,30 @@ def scrape(subdomain, save_dir, init_id, fin_id, syo, eyo, num_workers, chunk_si
             saver.save(bug_list)
 
     saver.save_metadata()
+
+
+@click.argument('subdomain')
+@click.option('--save-dir', '-s', type=click.Path(), default='.')
+@main.command()
+def commentscrape(subdomain, save_dir):
+    save_dir = PurePath(save_dir, 'bugs')
+
+    saver = CommentSaver(save_dir)
+    api = BugzillaCommentApi(subdomain)
+
+    for idx, bug_info in enumerate(tqdm(saver.bug_metadata, desc='Fetching and Saving comments')):
+        comment_list = api.fetch(bug_info.bug_id)
+        if comment_list is not None:
+            saver.save(idx, comment_list)
+
+    saver.save_metadata()
+
+
+@click.argument('save-dir')
+@main.command()
+def metagen(save_dir):
+    save_dir = PurePath(save_dir, 'bugs')
+    CommentSaver(save_dir).save_metadata()
 
 
 if __name__ == "__main__":
