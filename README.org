@@ -30,14 +30,14 @@ Use the following command to scrape bugs
 buscraper bugscrape <subdomain> -s <save_dir> -i <start_id> -f <end_id>
 #+END_SRC
 The above command scrapes all bugs from subdomain starting from id start_id till
-id end_id and stores them in "save_dir/bugs/" directory. The bugs are stored in files year.jsonl
+id end_id and stores them in "save_dir/<subdomain>bugs/" directory. The bugs are stored in files year.jsonl
 
 Once all the bugs have been scraped, you can scrape all the comments
 corresponding to the scraped bugs by using the command:
 #+BEGIN_SRC org
 buscraper commentscrape <subdomain> -s <save_dir>
 #+END_SRC
-The above command scrapes all comments and stores them in "save_dir/bugs/"
+The above command scrapes all comments and stores them in "save_dir/<subdomain>bugs/"
 directory. The bugs are stored in files year_comments.jsonl. A metadata file is
 also created ("bug_metadata.jsonl") that has information about all bug_ids
 scraped, their year and the associated comment_ids.
