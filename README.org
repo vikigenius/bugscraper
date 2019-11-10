@@ -21,12 +21,26 @@ Running the scraper only has three prerequisites:
 
 * Installation
 Clone this repository, create a new environment and use the command
-#begin_src org :eval never-export
+#+BEGIN_SRC org
 pip install -e .
-#end_src
-
+#+END_SRC
 * Usage
-TODO
+Use the following command to scrape bugs
+#+BEGIN_SRC org
+buscraper bugscrape <subdomain> -s <save_dir> -i <start_id> -f <end_id>
+#+END_SRC
+The above command scrapes all bugs from subdomain starting from id start_id till
+id end_id and stores them in "save_dir/bugs/" directory. The bugs are stored in files year.jsonl
 
+Once all the bugs have been scraped, you can scrape all the comments
+corresponding to the scraped bugs by using the command:
+#+BEGIN_SRC org
+buscraper commentscrape <subdomain> -s <save_dir>
+#+END_SRC
+The above command scrapes all comments and stores them in "save_dir/bugs/"
+directory. The bugs are stored in files year_comments.jsonl. A metadata file is
+also created ("bug_metadata.jsonl") that has information about all bug_ids
+scraped, their year and the associated comment_ids.
 * Troubleshooting
-TODO
+It is possible that the request sent is too large and might lead to issues.
+Try reducing the chunk size using option -c while scraping bugs.
