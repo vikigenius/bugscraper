@@ -110,8 +110,8 @@ def metagen(save_dir):
 @main.command()
 def clean(metadata, subdomain, save_dir):
     logger = logging.getLogger('bugscraper')
-    save_dir = Path(save_dir, 'subdomain' + 'bugs')
-    glob = '*' if metadata == 'all' else '**/*history.jsonl'
+    save_dir = Path(save_dir, subdomain + 'bugs')
+    glob = '*' if metadata == 'all' else f'**/*{metadata}.jsonl'
     for match in list(save_dir.glob(glob)):
         logger.info(f'Removing file {match}')
         match.unlink()
