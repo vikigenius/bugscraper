@@ -227,7 +227,7 @@ class HistorySaver(Saver):
 
         years = [metadata.year for metadata in self.bug_metadata]
         years = list(set(years))
-        logger.info(f'Opening {len(years)} files for saving comments')
+        logger.info(f'Opening {len(years)} files for saving history')
         for year in years:
             filepath = os.path.join(self.save_dir, str(year) + '_history.jsonl')
             self.fileobjs[year] = open(filepath, 'a')
