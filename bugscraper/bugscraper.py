@@ -77,7 +77,7 @@ class BugzillaHistoryApi(BugzillaApi):
         try:
             response = requests.get(url=str(self) + f'/{bug_id}/history')
             response.raise_for_status()
-            history_list = response.json()['bugs'][0][str(bug_id)]['history']
+            history_list = response.json()['bugs'][0]['history']
         except requests.exceptions.RequestException as e:
             logger.warn('Connection Error: returning None')
             logger.debug(str(e))
@@ -112,7 +112,7 @@ class Saver(object):
         self.fileobjs = {}
 
     def load_metadata(self):
-        metadata_path = PurePath(self.save_dir, 'bug_metatada.jsonl')
+        metadata_path = PurePath(self.save_dir, 'bug_metadata.jsonl')
         with open(metadata_path) as mf:
             for line in mf:
                 self.bug_metadata.append(BugSaveMetadata.from_json(line))
@@ -120,7 +120,7 @@ class Saver(object):
         return self.bug_metadata
 
     def save_metadata(self):
-        metadata_path = PurePath(self.save_dir, 'bug_metatada.jsonl')
+        metadata_path = PurePath(self.save_dir, 'bug_metadata.jsonl')
         with open(metadata_path, 'w') as mf:
             for meta in self.bug_metadata:
                 mf.write(json.dumps(asdict(meta)) + '\n')

@@ -103,5 +103,15 @@ def metagen(save_dir):
     CommentSaver(save_dir).save_metadata()
 
 
+@click.argument('metadata', type=click.Choice(['history', 'comments', 'all']))
+@click.argument('subdomain')
+@click.option('--save-dir', '-s', type=click.Path(), default='.')
+@main.command()
+def clean(metadata, subdomain, save_dir):
+    save_dir = PurePath(save_dir, 'subdomain' + 'bugs')
+    # TODO: Implement This
+    raise NotImplementedError
+
+
 if __name__ == "__main__":
     sys.exit(main())  # pragma: no cover
