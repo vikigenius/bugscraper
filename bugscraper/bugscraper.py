@@ -37,6 +37,7 @@ class BugzillaApi(object):
 class BugzillaBugApi(BugzillaApi):
     @overrides
     def fetch(self, bug_ids: Iterable[int]) -> List[int]:
+        bug_list = []
         try:
             response = requests.get(url=str(self) + '?', params={'id': list(bug_ids)})
             response.raise_for_status()
@@ -44,11 +45,9 @@ class BugzillaBugApi(BugzillaApi):
         except requests.exceptions.RequestException as e:
             logger.warn('Connection Error: returning None')
             logger.debug(str(e))
-            bug_list = []
         except KeyError as e:
             logger.warn('incorrect key bugs: returning None')
             logger.debug(str(e))
-            bug_list = []
         finally:
             return bug_list
 
@@ -56,18 +55,17 @@ class BugzillaBugApi(BugzillaApi):
 class BugzillaCommentApi(BugzillaApi):
     @overrides
     def fetch(self, bug_id: int):
+        comment_list = []
         try:
             response = requests.get(url=str(self) + f'/{bug_id}/comment')
             response.raise_for_status()
-            comment_list = response.json()['bugs'][str(bug_id)]['comments']
+            comment_list = response.json()['bugs'][0][str(bug_id)]['comments']
         except requests.exceptions.RequestException as e:
             logger.warn('Connection Error: returning None')
             logger.debug(str(e))
-            comment_list = []
         except KeyError as e:
             logger.warn('incorrect key: returning None')
             logger.debug(str(e))
-            comment_list = []
         finally:
             return comment_list
 
@@ -75,18 +73,17 @@ class BugzillaCommentApi(BugzillaApi):
 class BugzillaHistoryApi(BugzillaApi):
     @overrides
     def fetch(self, bug_id: int):
+        history_list = []
         try:
             response = requests.get(url=str(self) + f'/{bug_id}/history')
             response.raise_for_status()
-            history_list = response.json()['bugs'][str(bug_id)]['history']
+            history_list = response.json()['bugs'][0][str(bug_id)]['history']
         except requests.exceptions.RequestException as e:
             logger.warn('Connection Error: returning None')
             logger.debug(str(e))
-            history_list = []
         except KeyError as e:
             logger.warn('incorrect key: returning None')
             logger.debug(str(e))
-            history_list = []
         finally:
             return history_list
 
