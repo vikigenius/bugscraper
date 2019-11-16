@@ -7,21 +7,38 @@ import logging
 from typing import Iterable, List, Any
 from dataclasses import dataclass, field, asdict
 from pathlib import PurePath
+from overrides import overrides
+
+
+custom_subdomains = {
+    'kde': 'http://bugs.kde.org/rest/bug'
+}
 
 
 logger = logging.getLogger('bugscraper')
 
 
-class BugzillaBugApi(object):
+class BugzillaApi(object):
     """
     Simple API class interface to fetch bugs
     """
     def __init__(self, sub_domain: str):
         self.sub_domain = sub_domain
 
+    def fetch(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def __str__(self):
+        if self.sub_domain in custom_subdomains:
+            return custom_subdomains[self.sub_domain]
+        return f'http://bugzilla.{self.sub_domain}.org/rest/bug'
+
+
+class BugzillaBugApi(BugzillaApi):
+    @overrides
     def fetch(self, bug_ids: Iterable[int]) -> List[int]:
         try:
-            response = requests.get(url=str(self), params={'id': list(bug_ids)})
+            response = requests.get(url=str(self) + '?', params={'id': list(bug_ids)})
             response.raise_for_status()
             bug_list = response.json()['bugs']
         except requests.exceptions.RequestException as e:
@@ -35,17 +52,9 @@ class BugzillaBugApi(object):
         finally:
             return bug_list
 
-    def __str__(self):
-        return f'http://bugzilla.{self.sub_domain}.org/rest/bug?'
 
-
-class BugzillaCommentApi(object):
-    """
-    Simple API class interface to fetch bugs
-    """
-    def __init__(self, sub_domain: str):
-        self.sub_domain = sub_domain
-
+class BugzillaCommentApi(BugzillaApi):
+    @overrides
     def fetch(self, bug_id: int):
         try:
             response = requests.get(url=str(self) + f'/{bug_id}/comment')
@@ -62,17 +71,9 @@ class BugzillaCommentApi(object):
         finally:
             return comment_list
 
-    def __str__(self):
-        return f'http://bugzilla.{self.sub_domain}.org/rest/bug'
 
-
-class BugzillaHistoryApi(object):
-    """
-    Simple API class interface to fetch bugs
-    """
-    def __init__(self, sub_domain: str):
-        self.sub_domain = sub_domain
-
+class BugzillaHistoryApi(BugzillaApi):
+    @overrides
     def fetch(self, bug_id: int):
         try:
             response = requests.get(url=str(self) + f'/{bug_id}/history')
@@ -88,9 +89,6 @@ class BugzillaHistoryApi(object):
             history_list = []
         finally:
             return history_list
-
-    def __str__(self):
-        return f'http://bugzilla.{self.sub_domain}.org/rest/bug'
 
 
 @dataclass
