@@ -66,16 +66,47 @@ class BugzillaCommentApi(object):
         return f'http://bugzilla.{self.sub_domain}.org/rest/bug'
 
 
+class BugzillaHistoryApi(object):
+    """
+    Simple API class interface to fetch bugs
+    """
+    def __init__(self, sub_domain: str):
+        self.sub_domain = sub_domain
+
+    def fetch(self, bug_id: int):
+        try:
+            response = requests.get(url=str(self) + f'/{bug_id}/history')
+            response.raise_for_status()
+            history_list = response.json()['bugs'][str(bug_id)]['history']
+        except requests.exceptions.RequestException as e:
+            logger.warn('Connection Error: returning None')
+            logger.debug(str(e))
+            history_list = []
+        except KeyError as e:
+            logger.warn('incorrect key: returning None')
+            logger.debug(str(e))
+            history_list = []
+        finally:
+            return history_list
+
+    def __str__(self):
+        return f'http://bugzilla.{self.sub_domain}.org/rest/bug'
+
+
 @dataclass
 class BugSaveMetadata:
     bug_id: str = ''
     year: int = -1
     comment_ids: List[str] = field(default_factory=list)
+    edits: int = 0
 
     @classmethod
     def from_json(cls: 'BugSaveMetadata', json_str: str):
         bug_dict = json.loads(json_str)
-        return cls(str(bug_dict['bug_id']), bug_dict['year'], bug_dict['comment_ids'])
+
+        # Temporary workaround for backward compatiability
+        edits = bug_dict['edits'] if 'edits' in bug_dict else 0
+        return cls(str(bug_dict['bug_id']), bug_dict['year'], bug_dict['comment_ids'], edits)
 
 
 class Saver(object):
@@ -100,6 +131,22 @@ class Saver(object):
                 mf.write(json.dumps(asdict(meta)) + '\n')
 
         logger.info('Saved Metadata to file: {}'.format(metadata_path))
+
+    # Returns the bug metadata post simple checks
+    def collect_bug_metadata(self):
+        for path, directories, files in os.walk(self.save_dir):
+            for filename in files:
+                match = file_regex.match(filename)
+                if match:
+                    year = int(match.group(1))
+                    # Now open the file for reading
+
+                    filepath = os.path.join(self.save_dir, filename)
+                    with open(filepath) as bf:
+                        for line in bf:
+                            bug = json.loads(line)
+                            self.bug_metadata.append(BugSaveMetadata(str(bug['id']), year, [], 0))
+        return self.bug_metadata
 
     def __del__(self):
         for _, fileobj in self.fileobjs.items():
@@ -166,18 +213,32 @@ class CommentSaver(Saver):
         comment_ids = [str(comment['id']) for comment in comments]
         self.bug_metadata[meta_idx].comment_ids = comment_ids
 
-    # Returns the bug metadata post simple checks
-    def collect_bug_metadata(self):
-        for path, directories, files in os.walk(self.save_dir):
-            for filename in files:
-                match = file_regex.match(filename)
-                if match:
-                    year = int(match.group(1))
-                    # Now open the file for reading
 
-                    filepath = os.path.join(self.save_dir, filename)
-                    with open(filepath) as bf:
-                        for line in bf:
-                            bug = json.loads(line)
-                            self.bug_metadata.append(BugSaveMetadata(str(bug['id']), year, []))
-        return self.bug_metadata
+class HistorySaver(Saver):
+    """
+    Comment Saver utility that saves bug by years in json lines format
+    "TODO: Allow more granularity in file access"
+    """
+    def __init__(self, save_dir):
+        super().__init__(save_dir)
+
+        # Check if metadata exists
+        try:
+            self.load_metadata()
+        except Exception as e:
+            logger.debug('Metadata does not exist: {}'.format(e))
+            logger.debug('Loading Metadata from bug files')
+            self.collect_bug_metadata()
+
+        years = [metadata.year for metadata in self.bug_metadata]
+        years = list(set(years))
+        logger.info(f'Opening {len(years)} files for saving comments')
+        for year in years:
+            filepath = os.path.join(self.save_dir, str(year) + '_history.jsonl')
+            self.fileobjs[year] = open(filepath, 'a')
+
+    def save(self, meta_idx: int, history: List[Any]):
+        bug = self.bug_metadata[meta_idx]
+        hdict = {bug.bug_id: history}
+        self.fileobjs[bug.year].write(json.dumps(hdict) + '\n')
+        self.bug_metadata[meta_idx].edits = len(history)

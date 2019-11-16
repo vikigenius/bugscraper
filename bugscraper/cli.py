@@ -5,7 +5,9 @@ import sys
 import click
 from pathlib import PurePath
 from bugscraper.log import configure_logger
-from bugscraper.bugscraper import BugzillaBugApi, BugSaver, BugzillaCommentApi, CommentSaver
+from bugscraper.bugscraper import BugzillaBugApi, BugSaver
+from bugscraper.bugscraper import BugzillaCommentApi, CommentSaver
+from bugscraper.bugscraper import BugzillaHistoryApi, HistorySaver
 from bugscraper import utils
 from tqdm import tqdm
 
@@ -42,7 +44,7 @@ year_maps = {
 @click.option('--chunk-size', '-c', default=1000)
 @main.command()
 def bugscrape(subdomain, save_dir, init_id, fin_id, syo, eyo, chunk_size):
-    save_dir = PurePath(save_dir, 'bugs')
+    save_dir = PurePath(save_dir, subdomain + 'bugs')
     bug_range = range(init_id, fin_id)
     bug_chunks = list(utils.divide_chunks(bug_range, chunk_size))
     api = BugzillaBugApi(subdomain)
@@ -69,6 +71,23 @@ def commentscrape(subdomain, save_dir):
     api = BugzillaCommentApi(subdomain)
 
     for idx, bug_info in enumerate(tqdm(saver.bug_metadata, desc='Fetching and Saving comments')):
+        comment_list = api.fetch(bug_info.bug_id)
+        if comment_list is not None:
+            saver.save(idx, comment_list)
+
+    saver.save_metadata()
+
+
+@click.argument('subdomain')
+@click.option('--save-dir', '-s', type=click.Path(), default='.')
+@main.command()
+def historyscrape(subdomain, save_dir):
+    save_dir = PurePath(save_dir, subdomain + 'bugs')
+
+    saver = HistorySaver(save_dir)
+    api = BugzillaHistoryApi(subdomain)
+
+    for idx, bug_info in enumerate(tqdm(saver.bug_metadata, desc='Fetching and Saving histories')):
         comment_list = api.fetch(bug_info.bug_id)
         if comment_list is not None:
             saver.save(idx, comment_list)
