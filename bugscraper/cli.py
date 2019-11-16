@@ -3,7 +3,8 @@
 """Console script for bugscraper."""
 import sys
 import click
-from pathlib import PurePath
+import logging
+from pathlib import Path
 from bugscraper.log import configure_logger
 from bugscraper.bugscraper import BugzillaBugApi, BugSaver
 from bugscraper.bugscraper import BugzillaCommentApi, CommentSaver
@@ -44,7 +45,7 @@ year_maps = {
 @click.option('--chunk-size', '-c', default=1000)
 @main.command()
 def bugscrape(subdomain, save_dir, init_id, fin_id, syo, eyo, chunk_size):
-    save_dir = PurePath(save_dir, subdomain + 'bugs')
+    save_dir = Path(save_dir, subdomain + 'bugs')
     bug_range = range(init_id, fin_id)
     bug_chunks = list(utils.divide_chunks(bug_range, chunk_size))
     api = BugzillaBugApi(subdomain)
@@ -65,7 +66,7 @@ def bugscrape(subdomain, save_dir, init_id, fin_id, syo, eyo, chunk_size):
 @click.option('--save-dir', '-s', type=click.Path(), default='.')
 @main.command()
 def commentscrape(subdomain, save_dir):
-    save_dir = PurePath(save_dir, subdomain + 'bugs')
+    save_dir = Path(save_dir, subdomain + 'bugs')
 
     saver = CommentSaver(save_dir)
     api = BugzillaCommentApi(subdomain)
@@ -82,7 +83,7 @@ def commentscrape(subdomain, save_dir):
 @click.option('--save-dir', '-s', type=click.Path(), default='.')
 @main.command()
 def historyscrape(subdomain, save_dir):
-    save_dir = PurePath(save_dir, subdomain + 'bugs')
+    save_dir = Path(save_dir, subdomain + 'bugs')
 
     saver = HistorySaver(save_dir)
     api = BugzillaHistoryApi(subdomain)
@@ -99,7 +100,7 @@ def historyscrape(subdomain, save_dir):
 @click.option('--save-dir', '-s', type=click.Path(), default='.')
 @main.command()
 def metagen(save_dir):
-    save_dir = PurePath(save_dir, 'subdomain' + 'bugs')
+    save_dir = Path(save_dir, 'subdomain' + 'bugs')
     CommentSaver(save_dir).save_metadata()
 
 
@@ -108,9 +109,12 @@ def metagen(save_dir):
 @click.option('--save-dir', '-s', type=click.Path(), default='.')
 @main.command()
 def clean(metadata, subdomain, save_dir):
-    save_dir = PurePath(save_dir, 'subdomain' + 'bugs')
-    # TODO: Implement This
-    raise NotImplementedError
+    logger = logging.getLogger('bugscraper')
+    save_dir = Path(save_dir, 'subdomain' + 'bugs')
+    glob = '*' if metadata == 'all' else '**/*history.jsonl'
+    for match in list(save_dir.glob(glob)):
+        logger.info(f'Removing file {match}')
+        match.unlink()
 
 
 if __name__ == "__main__":
