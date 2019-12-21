@@ -60,7 +60,10 @@ class BugzillaCommentApi(BugzillaApi):
         try:
             response = requests.get(url=str(self) + f'/{bug_id}/comment')
             response.raise_for_status()
-            comment_list = response.json()['bugs'][0][str(bug_id)]['comments']
+            meta_obj = response.json()['bugs']
+            if isinstance(meta_obj, list):
+                meta_obj = meta_obj[0]
+            comment_list = meta_obj[str(bug_id)]['comments']
         except requests.exceptions.RequestException as e:
             logger.debug('Connection Error: returning None')
             logger.debug(str(e))
