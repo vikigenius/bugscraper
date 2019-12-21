@@ -11,7 +11,8 @@ from overrides import overrides
 
 
 custom_subdomains = {
-    'kde': 'http://bugs.kde.org/rest/bug'
+    'kde': 'http://bugs.kde.org/rest/bug',
+    'freebsd': 'https://bugs.freebsd.org/bugzilla/rest/bug'
 }
 
 

@@ -32,7 +32,9 @@ def main(verbose, debug_file):
 
 
 year_maps = {
-    'kernel': range(2002, 2019)
+    'kernel': range(2002, 2020),
+    'freebsd': range(1994, 2020),
+    'firefox': range(1998, 2020)
 }
 
 
