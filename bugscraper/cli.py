@@ -40,7 +40,7 @@ def main(verbose, debug_file):
 year_maps = {
     'kernel': range(2002, 2020),
     'freebsd': range(1994, 2020),
-    'mozilla': range(1997, 2020)
+    'mozilla': range(1996, 2020)
 }
 
 
@@ -58,7 +58,7 @@ def bugscrape(subdomain, save_dir, init_id, fin_id, syo, eyo, chunk_size):
     bug_chunks = list(utils.divide_chunks(bug_range, chunk_size))
     api = BugzillaBugApi(subdomain)
     if syo is not None and eyo is not None:
-        saver = BugSaver(save_dir, range(syo, eyo), len(bug_chunks))
+        saver = BugSaver(save_dir, range(syo, eyo + 1), len(bug_chunks))
     else:
         saver = BugSaver(save_dir, year_maps[subdomain], len(bug_chunks))
 
