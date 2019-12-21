@@ -40,7 +40,7 @@ def main(verbose, debug_file):
 year_maps = {
     'kernel': range(2002, 2020),
     'freebsd': range(1994, 2020),
-    'mozilla': range(1996, 2020)
+    'mozilla': range(1997, 2020)
 }
 
 

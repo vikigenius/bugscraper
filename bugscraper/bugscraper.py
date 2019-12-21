@@ -170,9 +170,12 @@ class BugSaver(Saver):
 
     def save(self, bug_list: Iterable[int]):
         for bug in bug_list:
-            creation_year = int(bug['creation_time'].split('-')[0])
-            self.fileobjs[creation_year].write(json.dumps(bug) + '\n')
-            self.bug_metadata.append(BugSaveMetadata(str(bug['id']), creation_year, []))
+            try:
+                creation_year = int(bug['creation_time'].split('-')[0])
+                self.fileobjs[creation_year].write(json.dumps(bug) + '\n')
+                self.bug_metadata.append(BugSaveMetadata(str(bug['id']), creation_year, []))
+            except KeyError as e:
+                logger.debug(str(e))
 
 
 # Regex to capture year name in file
