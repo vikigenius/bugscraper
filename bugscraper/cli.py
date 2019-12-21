@@ -15,7 +15,7 @@ from tqdm import tqdm
 
 @click.option(
     '-v', '--verbose',
-    is_flag=True, help='Print debug information', default=False
+    count=True, help='verbosity level : v{WARN}, vv{INFO}, vvv{DEBUG}'
 )
 @click.option(
     u'--debug-file', type=click.Path(), default=None,
@@ -24,8 +24,14 @@ from tqdm import tqdm
 @click.group()
 def main(verbose, debug_file):
     """Console script for bugscraper."""
+    verbosity = [
+        'ERROR',
+        'WARN',
+        'INFO',
+        'DEBUG'
+    ]
     configure_logger(
-        stream_level='DEBUG' if verbose else 'INFO',
+        stream_level=verbosity[verbose],
         debug_file=debug_file,
     )
     return 0

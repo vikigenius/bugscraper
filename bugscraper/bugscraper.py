@@ -44,7 +44,7 @@ class BugzillaBugApi(BugzillaApi):
             response.raise_for_status()
             bug_list = response.json()['bugs']
         except requests.exceptions.RequestException as e:
-            logger.warn('Connection Error: returning None')
+            logger.debug('Connection Error: returning None')
             logger.debug(str(e))
         except KeyError as e:
             logger.warn('incorrect key bugs: returning None')
@@ -62,10 +62,10 @@ class BugzillaCommentApi(BugzillaApi):
             response.raise_for_status()
             comment_list = response.json()['bugs'][0][str(bug_id)]['comments']
         except requests.exceptions.RequestException as e:
-            logger.warn('Connection Error: returning None')
+            logger.debug('Connection Error: returning None')
             logger.debug(str(e))
         except KeyError as e:
-            logger.warn('incorrect key: returning None')
+            logger.debug('incorrect key: returning None')
             logger.debug(str(e))
         finally:
             return comment_list
@@ -80,7 +80,7 @@ class BugzillaHistoryApi(BugzillaApi):
             response.raise_for_status()
             history_list = response.json()['bugs'][0]['history']
         except requests.exceptions.RequestException as e:
-            logger.warn('Connection Error: returning None')
+            logger.debug('Connection Error: returning None')
             logger.debug(str(e))
         except KeyError as e:
             logger.warn('incorrect key: returning None')
