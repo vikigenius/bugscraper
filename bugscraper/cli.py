@@ -134,6 +134,7 @@ def filter(subdomain, save_dir):
     saver = BugSaver(filter_save_dir, year_maps[subdomain])
     for bug in tqdm(utils.mozilla_filter(base_save_dir), desc='Filtering Bugs'):
         saver.save([bug])
+    saver.save_metadata()
 
 
 if __name__ == "__main__":
