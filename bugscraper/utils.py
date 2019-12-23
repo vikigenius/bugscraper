@@ -31,5 +31,7 @@ def get_dataframe(save_path: Path):
         with open(Path(save_path, str(year) + '.jsonl')) as bf:
             metalist = [json.loads(line) for line in bf]
             dflist.append(pd.DataFrame(metalist))
+
+    logger.debug('Concatenating Dataframes')
     df = pd.concat(dflist)
     return df
