@@ -125,5 +125,12 @@ def clean(metadata, subdomain, save_dir):
         match.unlink()
 
 
+@main.command()
+def filter(subdomain, save_dir):
+    save_dir = Path(save_dir, subdomain + 'bugs')
+    df = utils.get_dataframe(save_dir)
+    print(df.head())
+
+
 if __name__ == "__main__":
     sys.exit(main())  # pragma: no cover
