@@ -18,6 +18,8 @@ def divide_chunks(l, n):
 def get_dataframe(save_path: Path):
     years = set()
 
+    products = ['Core', 'Firefox', 'Toolkit']
+
     # Reading the metadata file to get years
     logger.debug('Reading metadata file to get years')
     with open(Path(save_path, 'bug_metadata.jsonl')) as mf:
@@ -30,7 +32,9 @@ def get_dataframe(save_path: Path):
         logger.debug(f'Reading Year: {year}')
         with open(Path(save_path, str(year) + '.jsonl')) as bf:
             metalist = [json.loads(line) for line in bf]
-            dflist.append(pd.DataFrame(metalist))
+            df = pd.DataFrame(metalist)
+            df = df[df['product'].isin(products)]
+            dflist.append(df)
 
     logger.debug('Concatenating Dataframes')
     df = pd.concat(dflist)
