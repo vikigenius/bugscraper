@@ -157,7 +157,7 @@ class BugSaver(Saver):
     Bug Saver utility that saves bug by years in json lines format
     "TODO: Allow more granularity in file access"
     """
-    def __init__(self, save_dir, years: Iterable[int], num_chunks: int):
+    def __init__(self, save_dir, years: Iterable[int]):
         super().__init__(save_dir)
 
         # Check if metadata exists

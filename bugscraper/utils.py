@@ -1,11 +1,6 @@
 #!/usr/bin/env python3
 import json
-import logging
-import pandas as pd
 from pathlib import Path
-
-
-logger = logging.getLogger('bugscraper')
 
 
 def divide_chunks(l, n):
@@ -15,29 +10,20 @@ def divide_chunks(l, n):
         yield l[i:i + n]
 
 
-def get_dataframe(save_path: Path):
+def mozilla_filter(save_path: Path):
     years = set()
 
     products = ['Core', 'Firefox']
 
     # Reading the metadata file to get years
-    logger.debug('Reading metadata file to get years')
     with open(Path(save_path, 'bug_metadata.jsonl')) as mf:
         for line in mf:
-            years.add(json.loads(line)['year'])
+            meta = json.loads(line)
+            years.add(meta['year'])
 
-    logger.debug(f'Available Years: {years}')
-    dflist = []
     for year in years:
-        logger.debug(f'Reading Year: {year}')
         with open(Path(save_path, str(year) + '.jsonl')) as bf:
-            metalist = [json.loads(line) for line in bf]
-            df = pd.DataFrame(metalist)
-            pflen = len(df)
-            df = df[df['product'].isin(products)]
-            aflen = len(df)
-            dflist.append(df)
-        logger.debug(f'Year {year}: Pre Filter Length: {pflen}, Post Filter Length: {aflen}')
-    logger.debug('Concatenating Dataframes')
-    df = pd.concat(dflist)
-    return df
+            for bugrec in bf:
+                bug = json.loads(bf)
+                if bug['product'] in products:
+                    yield bug

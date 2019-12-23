@@ -58,9 +58,9 @@ def bugscrape(subdomain, save_dir, init_id, fin_id, syo, eyo, chunk_size):
     bug_chunks = list(utils.divide_chunks(bug_range, chunk_size))
     api = BugzillaBugApi(subdomain)
     if syo is not None and eyo is not None:
-        saver = BugSaver(save_dir, range(syo, eyo + 1), len(bug_chunks))
+        saver = BugSaver(save_dir, range(syo, eyo + 1))
     else:
-        saver = BugSaver(save_dir, year_maps[subdomain], len(bug_chunks))
+        saver = BugSaver(save_dir, year_maps[subdomain])
 
     for chunk in tqdm(bug_chunks, desc='Fetching and Saving bug chunks of size {}'.format(len(bug_chunks))):
         bug_list = api.fetch(chunk)
@@ -130,8 +130,10 @@ def clean(metadata, subdomain, save_dir):
 @main.command()
 def filter(subdomain, save_dir):
     save_dir = Path(save_dir, subdomain + 'bugs')
-    df = utils.get_dataframe(save_dir)
-    print(df.head())
+    filter_save_dir = Path(save_dir, subdomain + 'bugs_filtered')
+    saver = BugSaver(filter_save_dir, year_maps[subdomain])
+    for bug in tqdm(utils.mozilla_filter(save_dir), desc='Filtering Bugs'):
+        saver.save([bug])
 
 
 if __name__ == "__main__":
