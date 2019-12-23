@@ -24,6 +24,6 @@ def mozilla_filter(save_path: Path):
     for year in years:
         with open(Path(save_path, str(year) + '.jsonl')) as bf:
             for bugrec in bf:
-                bug = json.loads(bf)
+                bug = json.loads(bugrec)
                 if bug['product'] in products:
                     yield bug

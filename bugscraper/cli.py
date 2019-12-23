@@ -129,10 +129,10 @@ def clean(metadata, subdomain, save_dir):
 @click.option('--save-dir', '-s', type=click.Path(), default='.')
 @main.command()
 def filter(subdomain, save_dir):
-    save_dir = Path(save_dir, subdomain + 'bugs')
+    base_save_dir = Path(save_dir, subdomain + 'bugs')
     filter_save_dir = Path(save_dir, subdomain + 'bugs_filtered')
     saver = BugSaver(filter_save_dir, year_maps[subdomain])
-    for bug in tqdm(utils.mozilla_filter(save_dir), desc='Filtering Bugs'):
+    for bug in tqdm(utils.mozilla_filter(base_save_dir), desc='Filtering Bugs'):
         saver.save([bug])
 
 
