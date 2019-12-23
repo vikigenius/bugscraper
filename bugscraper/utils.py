@@ -33,9 +33,11 @@ def get_dataframe(save_path: Path):
         with open(Path(save_path, str(year) + '.jsonl')) as bf:
             metalist = [json.loads(line) for line in bf]
             df = pd.DataFrame(metalist)
+            pflen = len(df)
             df = df[df['product'].isin(products)]
+            aflen = len(df)
             dflist.append(df)
-
+        logger.debug(f'Year {year}: Pre Filter Length: {pflen}, Post Filter Length: {aflen}')
     logger.debug('Concatenating Dataframes')
     df = pd.concat(dflist)
     return df
