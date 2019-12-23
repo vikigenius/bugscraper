@@ -26,7 +26,7 @@ def main(verbose, debug_file):
     """Console script for bugscraper."""
     verbosity = [
         'ERROR',
-        'WARN',
+        'WARNING',
         'INFO',
         'DEBUG'
     ]
