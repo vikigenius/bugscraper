@@ -18,7 +18,7 @@ def divide_chunks(l, n):
 def get_dataframe(save_path: Path):
     years = set()
 
-    products = ['Core', 'Firefox', 'Toolkit']
+    products = ['Core', 'Firefox']
 
     # Reading the metadata file to get years
     logger.debug('Reading metadata file to get years')
