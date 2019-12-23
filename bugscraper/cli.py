@@ -125,6 +125,8 @@ def clean(metadata, subdomain, save_dir):
         match.unlink()
 
 
+@click.argument('subdomain')
+@click.option('--save-dir', '-s', type=click.Path(), default='.')
 @main.command()
 def filter(subdomain, save_dir):
     save_dir = Path(save_dir, subdomain + 'bugs')
